@@ -65,6 +65,21 @@ The system accepts JSON events on the `events-input` topic.
 
 Events flow through a pipeline of microservices:
 
+```mermaid
+flowchart LR
+    A[Raw Events] -->|Kafka: events-input| B(Processor)
+    subgraph Processor
+    B1[Fan-Out] --> B2[Resequence Buffer]
+    B2 --> B3[Core Logic & State Store]
+    end
+    B -->|Kafka: running-totals-updates| C(Sink)
+    C -->|Write| D[(Redis Cluster)]
+    E[Read API] -->|Query| D
+    
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#dbf,stroke:#333,stroke-width:2px
+```
+
 1.  **Ingestion (Kafka)**: Events are published to `events-input`.
 2.  **Processor (Java/Kafka Streams)**:
     *   **Fan-Out**: Duplicates events for each metadata dimension.
