@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: sink
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: inventory-sink-group
+      auto-offset-reset: earliest
