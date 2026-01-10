@@ -35,6 +35,9 @@ public class KafkaStreamsConfig {
         public static final String AUDIT_TOPIC = "audit-log";
         public static final String STATE_STORE_NAME = "running-totals-store";
 
+        @org.springframework.beans.factory.annotation.Value("${app.processor.metadata-limit:3}")
+        private int metadataLimit;
+
         @org.springframework.beans.factory.annotation.Value("${app.processor.grace-period-ms:5000}")
         private long gracePeriodMs;
 
@@ -66,10 +69,10 @@ public class KafkaStreamsConfig {
                         if (event.getId() != null) {
                                 result.add(KeyValue.pair("ID:" + event.getId(), event));
 
-                                // Generic Dimensions (Max 3)
+                                // Generic Dimensions (Configurable Limit)
                                 if (event.getMetadata() != null) {
                                         event.getMetadata().stream()
-                                                        .limit(3)
+                                                        .limit(metadataLimit)
                                                         .forEach(dim -> {
                                                                 result.add(KeyValue.pair(
                                                                                 "ID:" + event.getId() + "#" + dim,
