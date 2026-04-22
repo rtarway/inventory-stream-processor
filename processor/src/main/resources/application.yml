@@ -10,4 +10,5 @@ spring:
       application-id: inventory-streams-app
       properties:
         default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
-        default.value.serde: com.inventory.stream.serdes.JsonSerde
+        # Value serde is set explicitly per Consumed/Produced in KafkaStreamsConfig (safer than a no-arg JsonSerde).
+        default.value.serde: org.apache.kafka.common.serialization.Serdes$ByteArraySerde
