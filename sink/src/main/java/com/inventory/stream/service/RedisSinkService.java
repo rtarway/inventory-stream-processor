@@ -37,7 +37,7 @@ public class RedisSinkService {
             }
 
         } catch (Exception e) {
-            log.error("Failed to process message: {}", message, e);
+            log.error("Failed to process message (length={})", message != null ? message.length() : 0, e);
         }
     }
 }

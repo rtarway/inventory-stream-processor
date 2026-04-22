@@ -8,3 +8,9 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: 6379
+
+# Optional: set app.api.require-api-key=true and app.api.api-key in production.
+app:
+  api:
+    require-api-key: ${APP_API_REQUIRE_API_KEY:false}
+    api-key: ${APP_API_API_KEY:}

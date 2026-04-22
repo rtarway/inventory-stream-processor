@@ -98,6 +98,21 @@ Key properties in `application.yml` or Environment Variables:
 | :--- | :--- | :--- | :--- |
 | `app.processor.grace-period-ms` | `APP_PROCESSOR_GRACE_PERIOD_MS` | `5000` | Buffer time to allow out-of-order events to arrive. Set to `0` for immediate processing (lowest latency). |
 | `app.processor.metadata-limit` | `APP_PROCESSOR_METADATA_LIMIT` | `3` | Maximum number of metadata dimensions to process per event (prevents explosion). |
+| `app.api.require-api-key` | `APP_API_REQUIRE_API_KEY` | `false` | When `true`, the Read API requires header `X-API-Key` matching `app.api.api-key`. |
+| `app.api.api-key` | `APP_API_API_KEY` | _(empty)_ | Shared secret for optional API-key gate. |
+
+---
+
+## Security
+
+- **Dependency & SBOM scanning**: The parent POM runs the CycloneDX Maven plugin on `package` (SBOM under `target/classes/META-INF/sbom/application.cdx.json`). For CVEs, run OWASP Dependency-Check locally or in CI:
+  ```bash
+  mvn -B -Pdependency-check verify -DskipTests
+  ```
+  For faster NVD access, set an [NVD API key](https://nvd.nist.gov/developers/request-an-api-key) as `NVD_API_KEY` (see `.github/workflows/dependency-check.yml`). Tune false positives in [`dependency-check-suppressions.xml`](dependency-check-suppressions.xml).
+- **Kafka Streams defaults**: The processor uses explicit JSON serdes in code; the default value serde is `ByteArraySerde` so a no-arg `JsonSerde` is never used accidentally.
+- **Read API**: Path keys are validated to a safe character set. Enable `APP_API_REQUIRE_API_KEY=true` plus `APP_API_API_KEY` in untrusted networks.
+- **Containers**: Service images run as a non-root user (`uid`/`gid` 10001). Build from the repository root, for example: `docker build -f api/Dockerfile .` (after `mvn package`).
 
 ---
 
@@ -120,12 +135,12 @@ Key properties in `application.yml` or Environment Variables:
 #### 1. Local Kubernetes (Docker Desktop / Minikube)
 Pre-requisites: `kubectl`, `docker`
 
-1.  **Build Images**:
+1.  **Build Images** (repository root as Docker build context):
     ```bash
-    ./mvnw clean package
-    docker build -t inventory-processor processor/
-    docker build -t inventory-sink sink/
-    docker build -t inventory-api api/
+    mvn clean package
+    docker build -f processor/Dockerfile -t inventory-processor .
+    docker build -f sink/Dockerfile -t inventory-sink .
+    docker build -f api/Dockerfile -t inventory-api .
     ```
 2.  **Apply Manifests**:
     The `k8s/` directory contains manifests for Zookeeper, Kafka, Redis, and the Apps.

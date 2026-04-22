@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
@@ -54,7 +52,9 @@ services:
 
   # Java App: Processor
   processor:
-    build: .
+    build:
+      context: .
+      dockerfile: processor/Dockerfile
     command: ["--spring.profiles.active=processor"]
     depends_on:
       kafka:
@@ -67,7 +67,9 @@ services:
 
   # Java App: Redis Sink
   sink:
-    build: .
+    build:
+      context: .
+      dockerfile: sink/Dockerfile
     command: ["--spring.profiles.active=sink"]
     depends_on:
       - kafka
@@ -79,7 +81,9 @@ services:
 
   # Java App: Read API
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     command: ["--spring.profiles.active=api"]
     ports:
       - "8080:8080"

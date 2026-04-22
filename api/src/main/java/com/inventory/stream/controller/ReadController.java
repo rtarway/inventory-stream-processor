@@ -1,5 +1,6 @@
 package com.inventory.stream.controller;
 
+import com.inventory.stream.validation.TotalKeyValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -22,6 +23,11 @@ public class ReadController {
 
     @GetMapping("/total/{key}")
     public ResponseEntity<?> getTotal(@PathVariable String key) {
+        if (!TotalKeyValidator.isValid(key)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid key");
+        }
+
         Object statusObj = redisTemplate.opsForHash().get("inventory:status", key);
         String status = statusObj != null ? statusObj.toString() : null;
 
